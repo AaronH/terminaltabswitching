@@ -5,10 +5,27 @@
 {
 	NSMenu* windowsMenu = [[NSApplication sharedApplication] windowsMenu];
 	
+	BOOL wasSeparator = FALSE;
+
 	for(NSMenuItem* menuItem in [windowsMenu itemArray])
 	{
-		if([menuItem action] == @selector(selectRepresentedTabViewItem:))
+		// makeKeyAndOrderFront switches windows based on COMMAND+NUMBER in Snow Leopard
+		// When starting Terminal with a multi-window Window group, tabswitching will
+		// fall down due to conflict.  Removing these items fixes the problem.
+		// Ideally, you could switch their keyEquivelant to OPTION or something, 
+		// but that is a project for another day.
+		if([menuItem action] == @selector(selectRepresentedTabViewItem:) || [menuItem action] == @selector(makeKeyAndOrderFront:))
 			[windowsMenu removeItem:menuItem];
+		
+		// remove duplicate separators that can appear in Snow Leopard
+		// when removing menu items
+		if ([menuItem isSeparatorItem]) {
+			if (wasSeparator == TRUE) [windowsMenu removeItem:menuItem];
+			wasSeparator = TRUE;
+		}
+		else wasSeparator = FALSE;
+		
+
 	}
 
 	NSArray* tabViewItems = [[self valueForKey:@"tabView"] tabViewItems];
